@@ -86,7 +86,7 @@ jobs:
         git fetch --all
         git checkout tags/${{ steps.version.outputs.tag }}
 
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           echo "Upstream latest tag: ${{ steps.version.outputs.tag }}"
           echo "Current released tag: $(awk '/latest/{print $NF; exit}' README.md)"
         fi
@@ -136,7 +136,7 @@ jobs:
         cd openwrt
         make defconfig clean
         
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           grep -i CONFIG_PACKAGE_luci-app .config | grep  -v \# > Plug-in
           grep -i CONFIG_PACKAGE_luci-theme .config | grep  -v \# >> Plug-in
           sed -i '/INCLUDE/d' Plug-in > /dev/null 2>&1
@@ -166,7 +166,7 @@ jobs:
 
     - name: check config file again
       run: |
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           echo
           echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
           echo "_/"
@@ -179,7 +179,7 @@ jobs:
         
         cd openwrt
         sh $GITHUB_WORKSPACE/$POST_FEEDS_UPDATE
-        # if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           cd $GITHUB_WORKSPACE
           echo
           echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
@@ -189,7 +189,7 @@ jobs:
           echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
           echo
           diff $GITHUB_WORKSPACE/devices/${{ matrix.config }} openwrt/.config || true
-        # fi
+        fi
           
     - name: compile firmware
       id: compile-firmware
@@ -209,12 +209,12 @@ jobs:
       run: |
         cd openwrt/bin/targets/*/*
         
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           tree .
         fi
         
         rm -rf packages
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           tree .
         fi
         
@@ -229,7 +229,7 @@ jobs:
           mv "$file" "${file#openwrt-23.05-immortalwrt-}"
         done
         
-        if [ ${{ env.VERBOSE }} == 'true' ] ; then
+        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
           echo
           echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
           echo "_/"
