@@ -125,6 +125,11 @@ jobs:
         cd openwrt
         ./scripts/feeds install -a
 
+        if [ "${{ matrix.target }}" == "Phicomm-K2P" ]; then
+          patch package/feeds/luci/luci-light/Makefile $GITHUB_WORKSPACE/patches/luci-light.patch
+          patch package/feeds/luci/luci/Makefile $GITHUB_WORKSPACE/patches/luci.patch
+        fi
+
     - name: load custom configuration
       run: |
         [ -e files ] && cp -R files openwrt/files
