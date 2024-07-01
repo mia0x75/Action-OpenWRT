@@ -184,17 +184,6 @@ jobs:
         
         cd openwrt
         sh $GITHUB_WORKSPACE/$POST_FEEDS_UPDATE
-        if [ '${{ env.VERBOSE }}' == 'true' ] ; then
-          cd $GITHUB_WORKSPACE
-          echo
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo "_/"
-          echo "_/ 脚本程序修正后的变化 ..."
-          echo "_/"
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo
-          diff $GITHUB_WORKSPACE/devices/${{ matrix.config }} openwrt/.config || true
-        fi
           
     - name: compile firmware
       id: compile-firmware

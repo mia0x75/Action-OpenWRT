@@ -97,6 +97,9 @@ jobs:
         cd openwrt
         ./scripts/feeds install -a
 
+        patch package/feeds/luci/luci-light/Makefile $GITHUB_WORKSPACE/patches/luci-light.patch
+        patch package/feeds/luci/luci/Makefile $GITHUB_WORKSPACE/patches/luci.patch
+
     - name: load custom configuration
       run: |
         [ -e files ] && cp -R files openwrt/files
