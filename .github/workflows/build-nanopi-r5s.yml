@@ -233,7 +233,7 @@ jobs:
       with:
         file: ${{ env.FIRMWARE }}/*
         file_glob: true
-        tag: NanoPi-R5S-${{ env.TAG }}
+        tag: Standalone-NanoPi-R5S-${{ env.TAG }}
         overwrite: true
         body: ${{ env.DESC }}
     

@@ -233,7 +233,7 @@ jobs:
       with:
         file: ${{ env.FIRMWARE }}/*
         file_glob: true
-        tag: Redmi-AX6000-${{ env.TAG }}
+        tag: Standalone-Redmi-AX6000-${{ env.TAG }}
         overwrite: true
         body: ${{ env.DESC }}
     
