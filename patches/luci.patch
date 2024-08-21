@@ -1,0 +1,12 @@
+--- /workdir/openwrt/package/feeds/luci/luci/Makefile	2024-06-23 11:25:31.727057681 +0800
++++ package/feeds/luci/luci/Makefile	2024-07-01 18:30:51.611224389 +0800
+@@ -12,8 +12,7 @@
+ LUCI_TITLE:=LuCI interface with Uhttpd as Webserver (default)
+ LUCI_DESCRIPTION:=Standard OpenWrt set including package management and attended sysupgrades support
+ LUCI_DEPENDS:= \
+-	+luci-light \
+-	+luci-app-opkg
++	+luci-light
+ 
+ PKG_LICENSE:=Apache-2.0
+ 
