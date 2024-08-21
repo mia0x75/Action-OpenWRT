@@ -71,7 +71,7 @@ jobs:
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.PAT }}
-          event-type: Auto Build
+          event-type: Matrix Build
           client-payload: '{"tag": "${{ steps.version.outputs.TAG }}"}'
 
 
