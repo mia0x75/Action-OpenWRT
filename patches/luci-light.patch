@@ -1,0 +1,12 @@
+--- /workdir/openwrt/package/feeds/luci/luci-light/Makefile	2024-06-23 11:25:31.726057713 +0800
++++ package/feeds/luci/luci-light/Makefile	2024-07-01 19:02:48.237479253 +0800
+@@ -13,9 +13,6 @@
+ LUCI_DESCRIPTION:=Light OpenWrt set including admin support and the default Bootstrap theme
+ LUCI_DEPENDS:= \
+ 	+IPV6:luci-proto-ipv6 \
+-	+luci-app-firewall \
+-	+luci-mod-admin-full \
+-	+luci-proto-ppp \
+ 	+luci-theme-bootstrap \
+ 	+rpcd-mod-rrdns \
+ 	+uhttpd \
