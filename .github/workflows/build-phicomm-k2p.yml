@@ -189,8 +189,8 @@ jobs:
         cd openwrt
 
         # make -j$(nproc) toolchain/install
-        # make -j1 V=sc
-        make -j$(nproc)
+        make -j1 V=sc
+        # make -j$(nproc)
         
         echo "status=success" >> $GITHUB_OUTPUT
         
