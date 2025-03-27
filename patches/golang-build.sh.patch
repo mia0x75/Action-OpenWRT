@@ -1,24 +1,14 @@
---- a/feeds/packages/lang/golang/golang-build.sh
-+++ b/feeds/packages/lang/golang/golang-build.sh
-@@ -152,7 +152,20 @@ install_bin() {
+--- a/lang/golang/golang-build.sh
++++ b/lang/golang/golang-build.sh
+@@ -151,6 +151,11 @@ build() {
+ install_bin() {
  	# shellcheck disable=SC2039
  	local dest="$1"
++        for bin in "$GO_BUILD_BIN_DIR"/*; do
++            if [ -f "$bin" ] && [ -x "$bin" ]; then
++                upx --best --lzma "$bin" || printf '警告：压缩文件 "%s" 时发生错误。\n' "$bin"
++            fi
++        done
  	install -d -m0755 "$dest/$GO_INSTALL_BIN_PATH"
--	install -m0755 "$GO_BUILD_BIN_DIR"/* "$dest/$GO_INSTALL_BIN_PATH/"
-+	# 安装文件并记录文件名
-+	local installed_files=()
-+	for bin in "$GO_BUILD_BIN_DIR"/*; do
-+		if [ -f "$bin" ] && [ -x "$bin" ]; then
-+			local bin_name=$(basename "$bin")
-+			install -m0755 "$bin" "$dest/$GO_INSTALL_BIN_PATH/$bin_name"
-+			installed_files+=("$dest/$GO_INSTALL_BIN_PATH/$bin_name")
-+		fi
-+	done
-+
-+	# 仅压缩本次安装的文件
-+	for bin in "${installed_files[@]}"; do
-+		upx --best --lzma "$bin" || echo "警告：压缩文件 \"$bin\" 时发生错误。\"
-+	done
+ 	install -m0755 "$GO_BUILD_BIN_DIR"/* "$dest/$GO_INSTALL_BIN_PATH/"
  }
- 
- install_src() {
