@@ -3,10 +3,10 @@ name: Standalone Build for NanoPi-R5S
 on:
   workflow_dispatch:
     inputs:
-      tag:
-        description: 'Tag to build'
+      branch:
+        description: 'Branch to build'
         required: true
-        default: 'v24.10.0' # Default Tag to Build
+        default: 'openwrt-24.10' # Default Branch to Build
       debug:
         description: 'Enable Debug'
         type: boolean
@@ -43,11 +43,13 @@ jobs:
       id: version
       run: |
         if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          tag="${{ github.event.inputs.tag }}"
+          branch="${{ github.event.inputs.branch }}"
         else
-          tag="${{ github.event.client_payload.tag }}"
+          branch="${{ github.event.client_payload.branch }}"
         fi
-        echo "tag=${tag}" >> $GITHUB_OUTPUT
+        tag=$(echo "$branch" | cut -d'-' -f2)
+        echo "tag=v${tag}" >> $GITHUB_OUTPUT
+        echo "branch=${branch}" >> $GITHUB_OUTPUT
 
     - name: 克隆特定标签的固件代码库代码到本地
       run: |
@@ -73,12 +75,7 @@ jobs:
         ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
         cd openwrt
         git fetch --all
-        git checkout tags/${{ steps.version.outputs.tag }}
-
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          echo "Upstream latest tag: ${{ steps.version.outputs.tag }}"
-          echo "Current released tag: $(awk '/latest/{print $NF; exit}' README.md)"
-        fi
+        git checkout ${{ steps.version.outputs.branch }}
 
         COMMIT_AUTHOR=$(git show -s --date=short --format="作者: %an")
         echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_ENV
@@ -325,6 +322,7 @@ jobs:
     name: "更新当前代码库"
     env:
       TAG: ${{ needs.build.outputs.tag }}
+      BRANCH: ${{ needs.build.outputs.branch }}
 
     steps:
       - name: 签出当前代码库
@@ -337,7 +335,7 @@ jobs:
         id: update-code
         run: |
           sed -i "s/\(latest.*:\).*/\1 ${{ env.TAG }}/" README.md
-          sed -i "/# Default Tag to Build/s/\(default[[:space:]]*:\).*/\1 '${{ env.TAG }}' # Default Tag to Build/" .github/workflows/build-nanopi-r5s.yml
+          sed -i "/# Default Branch to Build/s/\(default[[:space:]]*:\).*/\1 '${{ env.BRANCH }}' # Default Branch to Build/" .github/workflows/build-nanopi-r5s.yml
 
           git checkout --orphan tmp_work
           git branch -D main
