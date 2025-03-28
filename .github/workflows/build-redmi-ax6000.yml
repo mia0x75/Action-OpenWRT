@@ -204,11 +204,14 @@ jobs:
         cd openwrt
         # 修改主机名称
         sed -i 's/ImmortalWrt/Redmi-AX6000/g' package/base-files/files/bin/config_generate
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo "_/ 生成的配置文件"
-        echo "_/"
-        cat package/base-files/files/bin/config_generate | awk '{print "_/ " $0}'
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+
+        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo "_/ 生成的配置文件"
+          echo "_/"
+          cat package/base-files/files/bin/config_generate | awk '{print "_/ " $0}'
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+        fi
 
         sh $GITHUB_WORKSPACE/scripts/$POST_FEEDS_UPDATE
 
