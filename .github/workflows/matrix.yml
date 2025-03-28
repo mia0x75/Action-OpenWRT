@@ -231,7 +231,7 @@ jobs:
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-        [ -e $GITHUB_WORKSPACE/settings/banner ] && cp $GITHUB_WORKSPACE/setting/banner package/base-files/files/etc
+        [ -e $GITHUB_WORKSPACE/settings/banner ] && cp $GITHUB_WORKSPACE/settings/banner package/base-files/files/etc
 
     - name: 再次检查比较编译配置文件
       run: |
