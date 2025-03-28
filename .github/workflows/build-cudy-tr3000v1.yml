@@ -234,7 +234,6 @@ jobs:
       run: |
         set -e
         cd openwrt
-        ls scripts/ -lah
 
         if [ "${{ github.event.inputs.debug }}" = "true" ]; then
           make -j$(nproc) toolchain/install
