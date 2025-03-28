@@ -1,0 +1,15 @@
+--- a/feeds/packages/lang/rust/rust-host-build.mk
++++ b/feeds/packages/lang/rust/rust-host-build.mk
+@@ -44,6 +44,12 @@ define RustBinHostBuild
+   define Host/Install
+ 	$(INSTALL_DIR) $(STAGING_DIR_HOSTPKG)/bin
+ 	$(INSTALL_BIN) $(HOST_INSTALL_DIR)/bin/* $(STAGING_DIR_HOSTPKG)/bin/
++
++	COMPRESS_TARGETS := hbbr hbbs
++
++	for bin in $(COMPRESS_TARGETS); do \
++		upx --best --lzma "$(STAGING_DIR_HOSTPKG)/bin/$$$$bin" || true; \
++	done
+   endef
+ endef
+ 
