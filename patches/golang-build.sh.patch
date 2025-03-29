@@ -1,0 +1,14 @@
+--- a/lang/golang/golang-build.sh
++++ b/lang/golang/golang-build.sh
+@@ -151,6 +151,11 @@ build() {
+ install_bin() {
+ 	# shellcheck disable=SC2039
+ 	local dest="$1"
++	for bin in "$GO_BUILD_BIN_DIR"/*; do
++		if [ -f "$bin" ] && [ -x "$bin" ]; then
++			upx --best --lzma "$bin" || printf '警告：压缩文件 "%s" 时发生错误。\n' "$bin"
++		fi
++	done
+ 	install -d -m0755 "$dest/$GO_INSTALL_BIN_PATH"
+ 	install -m0755 "$GO_BUILD_BIN_DIR"/* "$dest/$GO_INSTALL_BIN_PATH/"
+ }
