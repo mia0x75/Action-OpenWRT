@@ -33,6 +33,7 @@ jobs:
     name: "构建固件"
     outputs:
       tag: ${{ steps.version.outputs.tag }}
+      branch: ${{ steps.version.outputs.branch }}
     runs-on: ubuntu-22.04
 
     steps:
