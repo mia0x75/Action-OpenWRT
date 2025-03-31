@@ -1,0 +1,35 @@
+--- a/feeds/packages/net/open-app-filter/Makefile
++++ b/feeds/packages/net/open-app-filter/Makefile
+@@ -6,9 +6,18 @@
+ 
+ PKG_SOURCE_URL:=https://github.com/destan19/OpenAppFilter.git
+ PKG_SOURCE_PROTO:=git
+-PKG_SOURCE_DATE:=2025-03-03
+-PKG_SOURCE_VERSION:=c0b5b22f29a8ee4aef8ac4eb04992da7b2d3fc21
+-PKG_MIRROR_HASH:=d5a91b580fd336a0873e79f7cdc38ffddf1718389f50fd0124eb0c7a69f3959f
++PKG_SOURCE_DATE:=2025-03-18
++PKG_SOURCE_VERSION:=72ff7c40cc166b3e468e1954742c51dac96930ed
++PKG_MIRROR_HASH:=93b0210e47ecafe941c9e29c978d5f2b5635e71492b0a74b5852d423d675b0d6
++
++EXTRA_CFLAGS += \
++    -Wno-unused-variable \
++    -Wno-error=unused-variable \
++    -Wno-implicit-fallthrough \
++    -Wno-discarded-qualifiers \
++    -Wno-int-conversion \
++    -Wno-error=parentheses \
++    -Wno-error=missing-braces
+ 
+ PKG_BUILD_PARALLEL:=1
+ 
+@@ -38,7 +45,9 @@
+ 
+ define Build/Compile
+ 	+$(KERNEL_MAKE) $(PKG_JOBS) \
+-		M="$(PKG_BUILD_DIR)/oaf/src" modules
++		M="$(PKG_BUILD_DIR)/oaf/src" \
++                EXTRA_CFLAGS="$(EXTRA_CFLAGS) -Wno-int-conversion -Wno-discarded-qualifiers" \
++                modules
+ 
+ 	$(call Build/Compile/Default)
+ endef

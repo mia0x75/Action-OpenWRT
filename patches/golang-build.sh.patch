@@ -1,0 +1,29 @@
+--- a/lang/golang/golang-build.sh
++++ b/lang/golang/golang-build.sh
+@@ -151,6 +152,26 @@ build() {
+ install_bin() {
+ 	# shellcheck disable=SC2039
+ 	local dest="$1"
++	if [ -n "$GO_BUILD_BIN_DIR" ]; then
++		local OPENWRT_STRIP="${STAGING_DIR_HOST}/bin/sstrip"
++		if [ -f "$OPENWRT_STRIP" ]; then
++			if [ ! -x "$OPENWRT_STRIP" ]; then
++				chmod +x $OPENWRT_STRIP
++			fi
++		fi
++		# Remove debug information
++		for bin in "$GO_BUILD_BIN_DIR"/*; do
++			if [ -f "$bin" ]; then
++				if [ ! -x "$bin" ]; then
++					chmod +x "$bin"
++				fi
++				if [ -f "$OPENWRT_STRIP" ]; then
++					"$OPENWRT_STRIP" "$bin" || printf '警告：去除文件 "%s" 调试信息时发生错误。\n' "$bin"
++				fi
++				upx --best --lzma "$bin" || printf '警告：压缩文件 "%s" 时发生错误。\n' "$bin"
++			fi
++		done
++	fi
+ 	install -d -m0755 "$dest/$GO_INSTALL_BIN_PATH"
+ 	install -m0755 "$GO_BUILD_BIN_DIR"/* "$dest/$GO_INSTALL_BIN_PATH/"
+ }
