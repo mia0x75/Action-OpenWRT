@@ -22,7 +22,7 @@ env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
-  CONFIG_FILE: nanopi-r5s-full.config
+  CONFIG_FILE: nanopi-r5s-minimal.config
   PRE_FEEDS_UPDATE: 00-feeds-update.sh
   SOURCE_PATCH: 01-source-patch.sh
   POST_FEEDS_UPDATE: 99-feeds-update.sh
@@ -103,7 +103,7 @@ jobs:
         sudo pip3 install pyelftools
         sudo apt-get -qq autoremove --purge
         sudo apt-get -qq clean
-        sudo pip3 install pyelftools 
+        sudo pip3 install pyelftools
         sudo systemctl daemon-reload
         echo
         echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
