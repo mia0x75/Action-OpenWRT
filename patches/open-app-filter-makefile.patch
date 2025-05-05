@@ -16,7 +16,7 @@
  
  PKG_BUILD_PARALLEL:=1
  
-@@ -38,7 +45,9 @@
+@@ -38,7 +47,9 @@
  
  define Build/Compile
  	+$(KERNEL_MAKE) $(PKG_JOBS) \
