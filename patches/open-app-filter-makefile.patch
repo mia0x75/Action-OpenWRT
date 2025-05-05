@@ -2,8 +2,8 @@
 +++ b/feeds/packages/net/open-app-filter/Makefile
 @@ -10,6 +10,15 @@
  
-PKG_SOURCE_VERSION:=f845584c624247712e7f7acca6a65da6482b7f36
-PKG_MIRROR_HASH:=f17807c08cca1aba3f6fdf999c3aee7194a03d2cc5f5ed67532e1a059e0f7499
+ PKG_SOURCE_VERSION:=f845584c624247712e7f7acca6a65da6482b7f36
+ PKG_MIRROR_HASH:=f17807c08cca1aba3f6fdf999c3aee7194a03d2cc5f5ed67532e1a059e0f7499
 +
 +EXTRA_CFLAGS += \
 +    -Wno-unused-variable \
