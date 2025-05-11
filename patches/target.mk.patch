@@ -1,6 +1,6 @@
 --- a/include/target.mk
 +++ b/include/target.mk
-@@ -404,3 +404,36 @@ ifeq ($(TARGET_BUILD),1)
+@@ -404,3 +404,79 @@ ifeq ($(TARGET_BUILD),1)
  endif
  
  endif #__target_inc
@@ -24,7 +24,50 @@
 +                    nano \
 +                    jq \
 +                    yq \
-+                    speedtest-go
++                    speedtest-go \
++                    hbbr \
++                    hbbs \
++                    spotifyd \
++                    ripgrep \
++                    rustdesk-server \
++                    lsd \
++                    bottom \
++                    dufs \
++                    tuic-client \
++                    arp-whisper \
++                    netavark \
++                    yggdrasil-jumper \
++                    dysk \
++                    tuic-server \
++                    wifi-presence \
++                    git-lfs \
++                    CloudflareSpeedTest \
++                    geoview \
++                    alist \
++                    go2rtc \
++                    telegraf \
++                    adguardhome \
++                    cni \
++                    crowdsec-firewall-bouncer \
++                    wgsd-coredns \
++                    wgsd-client \
++                    transfer \
++                    crowdsec-cli \
++                    restic \
++                    overture \
++                    hysteria \
++                    cloudreve \
++                    xray \
++                    xray-plugin \
++                    chinadns-ng \
++                    v2ray-plugin \
++                    filebrowser \
++                    frpc \
++                    frps \
++                    dae \
++                    daed \
++                    gost \
++                    v2ray
 +
 +define OptimizeTargetBins
 +  for bin in $(OPTIMIZE_TARGETS); do \
