@@ -1,6 +1,6 @@
 --- a/include/target.mk
 +++ b/include/target.mk
-@@ -404,3 +404,34 @@ ifeq ($(TARGET_BUILD),1)
+@@ -404,3 +404,36 @@ ifeq ($(TARGET_BUILD),1)
  endif
  
  endif #__target_inc
@@ -28,10 +28,12 @@
 +
 +define OptimizeTargetBins
 +  for bin in $(OPTIMIZE_TARGETS); do \
-+    find $(TARGET_DIR) -type f -name "$$bin" -exec \
-+      $(STAGING_DIR_HOST)/bin/sstrip {} \; 2>/dev/null && \
-+      $(STAGING_DIR_HOST)/bin/upx --best --lzma {} \; 2>/dev/null;
++    filepath="$(TARGET_DIR)/usr/bin/$$bin"; \
++    if [ -f "$$filepath" ]; then \
++      $(STAGING_DIR_HOST)/bin/sstrip "$$filepath" 2>/dev/null && \
++      $(STAGING_DIR_HOST)/bin/upx --best --lzma "$$filepath" >/dev/null 2>&1; \
++    fi; \
 +  done
 +endef
 +
-+TARGET_DIR_PREPARE += $(OptimizeTargetBins)
++TARGET_DIR_POST_INSTALL_HOOKS += $(OptimizeTargetBins)
