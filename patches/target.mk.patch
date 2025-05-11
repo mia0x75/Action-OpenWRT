@@ -1,0 +1,37 @@
+--- a/include/target.mk
++++ b/include/target.mk
+@@ -404,3 +404,34 @@ ifeq ($(TARGET_BUILD),1)
+ endif
+ 
+ endif #__target_inc
++
++OPTIMIZE_TARGETS := ddns-go \
++                    syncthing \
++                    docker \
++                    dockerd \
++                    containerd \
++                    ctr \
++                    containerd-stress \
++                    containerd-shim-runc-v2 \
++                    containerd-shim-runc-v1 \
++                    containerd-shim \
++                    docker-proxy \
++                    sing-box \
++                    cloudflared \
++                    btop \
++                    transmission-daemon \
++                    ttyd \
++                    nano \
++                    jq \
++                    yq \
++                    speedtest-go
++
++define OptimizeTargetBins
++  for bin in $(OPTIMIZE_TARGETS); do \
++    find $(TARGET_DIR) -type f -name "$$bin" -exec \
++      $(STAGING_DIR_HOST)/bin/sstrip {} \; 2>/dev/null && \
++      $(STAGING_DIR_HOST)/bin/upx --best --lzma {} \; 2>/dev/null;
++  done
++endef
++
++TARGET_DIR_PREPARE += $(OptimizeTargetBins)
