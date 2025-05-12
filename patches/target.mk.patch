@@ -87,4 +87,4 @@
 +  done
 +endef
 +
-+TARGET_DIR_POST_INSTALL_HOOKS += $(OptimizeTargetBins)
++TARGET_PREPARE_IMAGE_HOOKS += $(OptimizeTargetBins)
