@@ -9,7 +9,7 @@
 +docker-proxy sing-box cloudflared btop transmission-daemon ttyd nano jq yq speedtest-go hbbr hbbs spotifyd ripgrep rustdesk-server \
 +lsd bottom dufs tuic-client arp-whisper netavark yggdrasil-jumper dysk tuic-server wifi-presence git-lfs CloudflareSpeedTest geoview \
 +alist go2rtc telegraf adguardhome cni crowdsec-firewall-bouncer wgsd-coredns wgsd-client transfer crowdsec-cli restic overture \
-+hysteria cloudreve xray xray-plugin chinadns-ng v2ray-plugin filebrowser frpc frps dae daed gost v2ray
++hysteria cloudreve xray xray-plugin chinadns-ng v2ray-plugin filebrowser frpc frps dae daed gost v2ray gping
 +
 +# 统一的预处理逻辑（无调试输出）
 +define Image/mkfs/Prepare
