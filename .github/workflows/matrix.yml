@@ -11,7 +11,7 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'openwrt-24.10' # Default Branch to Build
+        default: 'openwrt-25.12' # Default Branch to Build
       debug:
         description: 'Enable Debug'
         type: boolean
@@ -235,14 +235,12 @@ jobs:
 
     - name: 再次检查比较编译配置文件
       run: |
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          echo
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo "_/ 编译程序修正后的配置文件 ..."
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo
-          cat openwrt/.config || true
-        fi
+        echo
+        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+        echo "_/ 编译程序修正后的配置文件 ..."
+        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+        echo
+        cat openwrt/.config || true
         echo
         echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
         echo "_/ 编译程序修正后的变化 ..."
