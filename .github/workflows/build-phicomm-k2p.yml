@@ -6,7 +6,7 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'openwrt-24.10' # Default Branch to Build
+        default: 'openwrt-25.12' # Default Branch to Build
       debug:
         description: 'Enable Debug'
         type: boolean
