@@ -54,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [Intel-x86-64, Phicomm-K2P, NanoPi-R5s, NanoPi-R5c, Redmi-AX6000, Cudy-TR3000v1, Cudy-TR3000v1-uboot]
+        target: [Intel-x86-64, Phicomm-K2P, NanoPi-R5s, NanoPi-R5c, Redmi-AX6000]
         include:
           - target: Intel-x86-64
             config: intel-x86-64-full.config
@@ -71,12 +71,6 @@ jobs:
           - target: Redmi-AX6000
             config: redmi-ax6000-full.config
             tag: Redmi-AX6000
-          - target: Cudy-TR3000v1
-            config: cudy-tr3000v1-uboot-full.config
-            tag: Cudy-TR3000v1
-          - target: Cudy-TR3000v1-uboot
-            config: cudy-tr3000v1-uboot-full.config
-            tag: Cudy-TR3000v1-uboot
 
     name: "构建固件"
     outputs:
@@ -195,15 +189,6 @@ jobs:
       run: |
         [ -e files ] && cp -R files openwrt/files
         if [ -e devices/${{ matrix.config }} ]; then
-          # 共享配置文件，仅做必要的替换和删除
-          if [ "${{ matrix.tag }}" = "Cudy-TR3000v1" ]; then
-            sed -i 's/^# \(CONFIG_TARGET_mediatek_filogic_DEVICE_cudy_tr3000-v1\) is not set$/\1=y/' devices/${{ matrix.config }}
-            sed -i 's/^CONFIG_TARGET_mediatek_filogic_DEVICE_cudy_tr3000-v1-ubootmod=y$/# CONFIG_TARGET_mediatek_filogic_DEVICE_cudy_tr3000-v1-ubootmod is not set/' devices/${{ matrix.config }}
-            sed -i 's/^CONFIG_TARGET_PROFILE="DEVICE_cudy_tr3000-v1-ubootmod"$/CONFIG_TARGET_PROFILE="DEVICE_cudy_tr3000-v1"/' devices/${{ matrix.config }}
-            sed -i '/^CONFIG_PACKAGE_trusted-firmware-a-mt7981-cudy-tr3000-v1=y$/d' devices/${{ matrix.config }}
-            sed -i '/^CONFIG_PACKAGE_u-boot-mt7981_cudy_tr3000-v1=y$/d' devices/${{ matrix.config }}
-          fi
-
           cp devices/${{ matrix.config }} openwrt/.config
           VERSION_NUMBER=$(echo "${{ steps.version.outputs.tag }}" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/\1/')
           sed -i "s/__VERSION_NUMBER__/$VERSION_NUMBER/g" openwrt/.config
