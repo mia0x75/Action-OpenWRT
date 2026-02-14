@@ -173,11 +173,11 @@ jobs:
     - name: 下载待编译软件包
       run: |
         cd openwrt
+        rm package/feeds/packages/onionshare-cli -rf
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
         [ -e $GITHUB_WORKSPACE/settings/banner ] && cp $GITHUB_WORKSPACE/settings/banner package/base-files/files/etc
-        rm package/feeds/packages/onionshare-cli -rf
 
     - name: 再次检查比较编译配置文件
       run: |

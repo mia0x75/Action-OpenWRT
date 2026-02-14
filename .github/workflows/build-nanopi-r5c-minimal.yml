@@ -177,6 +177,7 @@ jobs:
     - name: 下载待编译软件包
       run: |
         cd openwrt
+        rm package/feeds/packages/onionshare-cli -rf
         make download -j$(nproc)
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -239,8 +240,8 @@ jobs:
 
         #
         VERSION_NUMBER=$(echo "${{ steps.version.outputs.tag }}" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/\1/')
-        for file in openwrt-${VERSION_NUMBER}-immortalwrt-*; do
-          mv "$file" "${file#openwrt-${VERSION_NUMBER}-immortalwrt-}"
+        for file in openwrt-${VERSION_NUMBER}-*; do
+          mv "$file" "${file#openwrt-${VERSION_NUMBER}-}"
         done
 
         if [ "${{ github.event.inputs.debug }}" = "true" ]; then
