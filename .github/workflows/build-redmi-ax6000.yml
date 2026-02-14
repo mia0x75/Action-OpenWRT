@@ -6,7 +6,7 @@ on:
       branch:
         description: 'Branch to build'
         required: true
-        default: 'openwrt-24.10' # Default Branch to Build
+        default: 'openwrt-25.12' # Default Branch to Build
       debug:
         description: 'Enable Debug'
         type: boolean
@@ -19,7 +19,7 @@ permissions:
   actions: write
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: master
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: redmi-ax6000-full.config
