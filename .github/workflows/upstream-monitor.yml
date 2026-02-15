@@ -1,0 +1,92 @@
+name: Upstream Monitor
+
+env:
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: master
+
+on:
+  schedule:
+    - cron: "30 21 * * *"
+
+jobs:
+  check-devices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: check upstream version
+        id: version
+        run: |
+          FOUND=false
+          NEW_TAG=""
+          RELEASED_BRANCH=$(awk '/latest/{print $NF; exit}' README.md)
+          IFS='.' read -r -a RELEASED_BRANCH_HT <<< "${RELEASED_BRANCH//openwrt-/}"
+
+          BRANCH_LIST=$(wget -qO- --tries=3 "https://api.github.com/repos/immortalwrt/immortalwrt/branches" | awk -F '"' '/name/{print $(NF-1)}')
+          IFS=' ' read -r -a BRANCHES <<< "$BRANCH_LIST"
+
+          # 遍历查找所有的分支，因为上游有多个版本并行发布，找出比已发布版本更新的标签
+          for BRANCH in "${BRANCHES[@]}"; do
+            if [[ $BRANCH =~ ^openwrt-[0-9]{2}\.[0-9]{2}$ && ${#BRANCH} -eq 13 ]]; then
+              continue
+            fi
+            # 按段拆分标签
+            IFS='.' read -r -a CURRENT_BRANCH_HT <<< "${BRANCH//openwrt-/}"
+
+            # 标准化
+            while [[ ${#RELEASED_BRANCH_HT[@]} -lt ${#CURRENT_BRANCH_HT[@]} ]]; do
+              RELEASED_BRANCH_HT+=("0")
+            done
+            while [[ ${#CURRENT_BRANCH_HT[@]} -lt ${#RELEASED_BRANCH_HT[@]} ]]; do
+              CURRENT_BRANCH_HT+=("0")
+            done
+
+            # 比较
+            for ((i=0; i<${#RELEASED_BRANCH_HT[@]}; i++)); do
+              if (( 10#${CURRENT_BRANCH_HT[i]} > 10#${RELEASED_BRANCH_HT[i]} )); then
+                FOUND=true
+                break
+              elif (( 10#${CURRENT_BRANCH_HT[i]} < 10#${RELEASED_BRANCH_HT[i]} )); then
+                break
+              fi
+            done
+
+            # 有新版
+            if $FOUND; then
+              NEW_BRANCH=$BRANCH
+              break
+            fi
+          done
+
+          echo "RELEASED BRANCH: $RELEASED_BRANCH"
+          if $FOUND; then
+            echo "UPSTREAM NEW BRANCH: $NEW_BRANCH"
+          fi
+
+          echo "BRANCH=${NEW_BRANCH}" >> $GITHUB_OUTPUT
+
+      - name: trigger build
+        if: steps.version.outputs.TAG != ''
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          event-type: Matrix Build
+          client-payload: '{"branch": "${{ steps.version.outputs.BRANCH }}"}'
+
+  housekeep:
+    needs: check-devices
+    runs-on: ubuntu-latest
+    steps:
+      - name: delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.repository }}
+          delete_workflow_pattern: "Upstream Monitor"
+          retain_days: 0
+          keep_minimum_runs: 0
+          delete_run_by_conclusion_pattern: "cancelled, skipped, success"
