@@ -101,7 +101,7 @@ jobs:
           # for ubuntu-24.04
           sudo apt-get -y -qq install build-essential clang flex bison g++ gawk e2fsprogs \
             gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev upx-ucl wget \
-            python3-distlib rsync unzip zlib1g-dev file xz-utils python3-pyelftools > /dev/null
+            python3-distlib rsync unzip zlib1g-dev file xz-utils python3-pyelftools genisoimage qemu-utils > /dev/null
           sudo apt-get -qq autoremove --purge
           sudo apt-get -qq clean
           # using upx 5.1.0
