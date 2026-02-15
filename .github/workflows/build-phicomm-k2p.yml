@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       branch:
-        description: 'Branch to build'
+        description: "Branch to build"
         required: true
-        default: 'openwrt-25.12' # Default Branch to Build
+        default: "openwrt-25.12" # Default Branch to Build
       debug:
-        description: 'Enable Debug'
+        description: "Enable Debug"
         type: boolean
         required: false
         default: false
@@ -36,282 +36,282 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
-    - name: 签出当前代码库最新代码
-      uses: actions/checkout@v4
+      - name: 签出当前代码库最新代码
+        uses: actions/checkout@v4
 
-    - name: 获取待构建的固件版本标签
-      id: version
-      run: |
-        if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-          branch="${{ github.event.inputs.branch }}"
-        else
-          branch="${{ github.event.client_payload.branch }}"
-        fi
-        tag=$(echo "$branch" | cut -d'-' -f2)
-        echo "tag=v${tag}" >> $GITHUB_OUTPUT
-        echo "branch=${branch}" >> $GITHUB_OUTPUT
+      - name: 获取待构建的固件版本标签
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            branch="${{ github.event.inputs.branch }}"
+          else
+            branch="${{ github.event.client_payload.branch }}"
+          fi
+          tag=$(echo "$branch" | cut -d'-' -f2)
+          echo "tag=v${tag}" >> $GITHUB_OUTPUT
+          echo "branch=${branch}" >> $GITHUB_OUTPUT
 
-    - name: 克隆特定标签的固件代码库代码到本地
-      run: |
-        echo "服务器配置信息："
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo "_/ 处理器："
-        echo "_/ 处理器数量：(cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l)"
-        echo "_/ 核心数量：$(nproc)"
-        echo -e "_/ 处理器型号：$(cat /proc/cpuinfo | grep -m1 name | awk -F: '{print $2}')"
-        echo "_/"
-        echo "_/ 内存信息："
-        sudo lshw -short -C memory | grep GiB | awk '{print "_/ " $0}'
-        echo "_/"
-        echo "_/ 硬盘信息："
-        echo "_/ 硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT | awk '{print "_/ " $0}'
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+      - name: 克隆特定标签的固件代码库代码到本地
+        run: |
+          echo "服务器配置信息："
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo "_/ 处理器："
+          echo "_/ 处理器数量：(cat /proc/cpuinfo | grep "physical id" | sort | uniq | wc -l)"
+          echo "_/ 核心数量：$(nproc)"
+          echo -e "_/ 处理器型号：$(cat /proc/cpuinfo | grep -m1 name | awk -F: '{print $2}')"
+          echo "_/"
+          echo "_/ 内存信息："
+          sudo lshw -short -C memory | grep GiB | awk '{print "_/ " $0}'
+          echo "_/"
+          echo "_/ 硬盘信息："
+          echo "_/ 硬盘数量: $(ls /dev/sd* | grep -v [1-9] | wc -l)" && df -hT | awk '{print "_/ " $0}'
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
 
-        sudo mkdir -p /mnt/workdir
-        sudo chown $USER:$GROUPS /mnt/workdir
-        cd /mnt/workdir
+          sudo mkdir -p /mnt/workdir
+          sudo chown $USER:$GROUPS /mnt/workdir
+          cd /mnt/workdir
 
-        git clone $REPO_URL openwrt
-        ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        cd openwrt
-        git fetch --all
-        git checkout ${{ steps.version.outputs.branch }}
+          git clone $REPO_URL openwrt
+          ln -sf /mnt/workdir/openwrt $GITHUB_WORKSPACE/openwrt
+          cd openwrt
+          git fetch --all
+          git checkout ${{ steps.version.outputs.branch }}
 
-        COMMIT_AUTHOR=$(git show -s --date=short --format="作者: %an")
-        echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_ENV
-        COMMIT_DATE=$(git show -s --date=short --format="时间: %ci")
-        echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
-        COMMIT_MESSAGE=$(git show -s --date=short --format="内容: %s")
-        echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
-        COMMIT_HASH=$(git show -s --date=short --format="hash: %H")
-        echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
+          COMMIT_AUTHOR=$(git show -s --date=short --format="作者: %an")
+          echo "COMMIT_AUTHOR=$COMMIT_AUTHOR" >> $GITHUB_ENV
+          COMMIT_DATE=$(git show -s --date=short --format="时间: %ci")
+          echo "COMMIT_DATE=$COMMIT_DATE" >> $GITHUB_ENV
+          COMMIT_MESSAGE=$(git show -s --date=short --format="内容: %s")
+          echo "COMMIT_MESSAGE=$COMMIT_MESSAGE" >> $GITHUB_ENV
+          COMMIT_HASH=$(git show -s --date=short --format="hash: %H")
+          echo "COMMIT_HASH=$COMMIT_HASH" >> $GITHUB_ENV
 
-    - name: 初始化编译环境
-      env:
-        DEBIAN_FRONTEND: noninteractive
-      run: |
-        sudo timedatectl set-timezone "$TZ"
-        sudo apt-get -qq update --fix-missing
-        sudo apt full-upgrade -y
+      - name: 初始化编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo timedatectl set-timezone "$TZ"
+          sudo apt-get -qq update --fix-missing
+          sudo apt full-upgrade -y
 
-        # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem#examples_of_package_installations
-        # for ubuntu-24.04
-        sudo apt-get -y -qq install build-essential clang flex bison g++ gawk \
-          gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
-          rsync unzip zlib1g-dev file wget xz-utils python3-distlib python3-pyelftools > /dev/null
-        sudo apt-get -qq autoremove --purge
-        sudo apt-get -qq clean
-        # using upx 5.1.0
-        wget https://github.com/upx/upx/releases/download/v5.1.0/upx-5.1.0-amd64_linux.tar.xz
-        tar -xJf upx-5.1.0-amd64_linux.tar.xz
-        sudo cp upx-5.1.0-amd64_linux/upx /usr/bin
-        #
-        sudo systemctl daemon-reload
-        echo
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo "_/ 磁盘空间"
-        echo "_/"
-        df -h | awk '{print "_/ " $0}'
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          # https://openwrt.org/docs/guide-developer/toolchain/install-buildsystem#examples_of_package_installations
+          # for ubuntu-24.04
+          sudo apt-get -y -qq install build-essential clang flex bison g++ gawk \
+            gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
+            rsync unzip zlib1g-dev file wget xz-utils python3-distlib python3-pyelftools > /dev/null
+          sudo apt-get -qq autoremove --purge
+          sudo apt-get -qq clean
+          # using upx 5.1.0
+          wget https://github.com/upx/upx/releases/download/v5.1.0/upx-5.1.0-amd64_linux.tar.xz
+          tar -xJf upx-5.1.0-amd64_linux.tar.xz
+          sudo cp upx-5.1.0-amd64_linux/upx /usr/bin
+          #
+          sudo systemctl daemon-reload
+          echo
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo "_/ 磁盘空间"
+          echo "_/"
+          df -h | awk '{print "_/ " $0}'
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
 
-    - name: 加载自定义软件源
-      run: |
-        cd openwrt
-        sh $GITHUB_WORKSPACE/scripts/$PRE_FEEDS_UPDATE
+      - name: 加载自定义软件源
+        run: |
+          cd openwrt
+          sh $GITHUB_WORKSPACE/scripts/$PRE_FEEDS_UPDATE
 
-    - name: 更新软件源
-      run: |
-        cd openwrt
-        ./scripts/feeds update -a
+      - name: 更新软件源
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
 
-    - name: 安装软件源
-      run: |
-        cd openwrt
-        ./scripts/feeds install -a
+      - name: 安装软件源
+        run: |
+          cd openwrt
+          ./scripts/feeds install -a
 
-    - name: 加载编译配置文件
-      run: |
-        [ -e files ] && cp -R files openwrt/files
-        if [ -e devices/$CONFIG_FILE ]; then 
-          cp devices/$CONFIG_FILE openwrt/.config
+      - name: 加载编译配置文件
+        run: |
+          [ -e files ] && cp -R files openwrt/files
+          if [ -e devices/$CONFIG_FILE ]; then
+            cp devices/$CONFIG_FILE openwrt/.config
+            VERSION_NUMBER=$(echo "${{ steps.version.outputs.tag }}" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/\1/')
+            sed -i "s/__VERSION_NUMBER__/$VERSION_NUMBER/g" openwrt/.config
+          else
+            exit 1
+          fi
+
+      - name: 处理编译配置文件
+        id: package
+        run: |
+          cd openwrt
+          make defconfig
+          make clean
+
+          grep -i CONFIG_PACKAGE_luci-app .config | grep  -v \# > Plug-in
+          sed -i '/INCLUDE/d' Plug-in > /dev/null 2>&1
+          sed -i 's/CONFIG_PACKAGE_/  * /g' Plug-in
+          sed -i 's/=y/\ /g' Plug-in
+          sed -i 's/=m/\ /g' Plug-in
+
+          echo
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo "_/ 已选插件列表..."
+          echo "_/"
+          cat Plug-in > $GITHUB_WORKSPACE/packages.txt
+          sed -i 's/^  \*/_\//g' Plug-in
+          cat Plug-in
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo -e "\n\n"
+
+          SOURCE_REPO="$(echo $REPO_URL | awk -F '/' '{print $(NF)}')"
+          echo "SOURCE_REPO=$SOURCE_REPO" >> $GITHUB_ENV
+          DEVICE_TARGET=$(cat .config | grep CONFIG_TARGET_BOARD | awk -F '"' '{print $2}')
+          echo "DEVICE_TARGET=$DEVICE_TARGET" >> $GITHUB_ENV
+          DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
+          echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
+
+      - name: 下载待编译软件包
+        run: |
+          cd openwrt
+          rm package/feeds/packages/onionshare-cli -rf
+          make download -j$(nproc)
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+          [ -e $GITHUB_WORKSPACE/settings/banner ] && cp $GITHUB_WORKSPACE/settings/banner package/base-files/files/etc
+
+      - name: 再次检查比较编译配置文件
+        run: |
+          if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+            echo
+            echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+            echo "_/ 编译程序修正后的配置文件 ..."
+            echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+            echo
+            cat openwrt/.config || true
+          fi
+          echo
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo "_/ 编译程序修正后的变化 ..."
+          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+          echo
+          diff $GITHUB_WORKSPACE/devices/$CONFIG_FILE openwrt/.config || true
+
+          cd openwrt
+          # 修改主机名称
+          sed -i 's/ImmortalWrt/Phicomm-K2P/g' package/base-files/files/bin/config_generate
+          sh $GITHUB_WORKSPACE/scripts/$POST_FEEDS_UPDATE
+
+      - name: 编译固件
+        id: compile-firmware
+        run: |
+          set -e
+          cd openwrt
+
+          make -j$(nproc) toolchain/install
+
+          if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+            tree -a -L 1 -h -D -p --du staging_dir/host/bin
+            make -j1 V=sc
+          else
+            make -j$(nproc) || make -j1 V=sc
+          fi
+          echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
+          echo "status=success" >> $GITHUB_OUTPUT
+
+      - name: 组织文件
+        id: organize
+        if: steps.compile-firmware.outputs.status == 'success' && !cancelled()
+        run: |
+          cd openwrt/bin/targets/*/*
+
+          if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+            tree .
+          fi
+
+          rm -rf packages
+          if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+            tree .
+          fi
+
+          # ├── config.buildinfo
+          # ├── feeds.buildinfo
+          # ├── openwrt-24.10--xxxxxx
+          # ├── profiles.json
+          # ├── sha256sums
+          # └── version.buildinfo
+
+          #
           VERSION_NUMBER=$(echo "${{ steps.version.outputs.tag }}" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/\1/')
-          sed -i "s/__VERSION_NUMBER__/$VERSION_NUMBER/g" openwrt/.config
-        else
-          exit 1
-        fi
+          for file in openwrt-${VERSION_NUMBER}-*; do
+            mv "$file" "${file#openwrt-${VERSION_NUMBER}-}"
+          done
 
-    - name: 处理编译配置文件
-      id: package
-      run: |
-        cd openwrt
-        make defconfig
-        make clean
+          if [ "${{ github.event.inputs.debug }}" = "true" ]; then
+            echo
+            echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+            echo "_/ 待发布文件列表..."
+            echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
+            tree .
+            echo
+          fi
+          echo "FIRMWARE=$PWD" >> $GITHUB_ENV
 
-        grep -i CONFIG_PACKAGE_luci-app .config | grep  -v \# > Plug-in
-        sed -i '/INCLUDE/d' Plug-in > /dev/null 2>&1
-        sed -i 's/CONFIG_PACKAGE_/  * /g' Plug-in
-        sed -i 's/=y/\ /g' Plug-in
-        sed -i 's/=m/\ /g' Plug-in
+          echo "发布版本：${{ steps.version.outputs.tag }}" > $GITHUB_WORKSPACE/release.txt
+          echo "平台架构：${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}" >> $GITHUB_WORKSPACE/release.txt
+          echo "固件源码：${{ env.REPO_URL }}" >> $GITHUB_WORKSPACE/release.txt
+          echo "内核版本：$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_WORKSPACE/release.txt
+          echo "默认地址：192.168.1.1" >> $GITHUB_WORKSPACE/release.txt
+          echo "默认密码：空" >> $GITHUB_WORKSPACE/release.txt
+          echo "构建日期：${{ env.DATE }}" >> $GITHUB_WORKSPACE/release.txt
+          echo "插件列表：" >> $GITHUB_WORKSPACE/release.txt
+          echo "" >> $GITHUB_WORKSPACE/release.txt
+          cat $GITHUB_WORKSPACE/packages.txt >> $GITHUB_WORKSPACE/release.txt
 
-        echo
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo "_/ 已选插件列表..."
-        echo "_/"
-        cat Plug-in > $GITHUB_WORKSPACE/packages.txt
-        sed -i 's/^  \*/_\//g' Plug-in
-        cat Plug-in
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo -e "\n\n"
+          rm -rf $GITHUB_WORKSPACE/Plug-in
+          RELEASE_BODY=$(cat $GITHUB_WORKSPACE/release.txt)
+          echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
+          echo "$RELEASE_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-        SOURCE_REPO="$(echo $REPO_URL | awk -F '/' '{print $(NF)}')"
-        echo "SOURCE_REPO=$SOURCE_REPO" >> $GITHUB_ENV
-        DEVICE_TARGET=$(cat .config | grep CONFIG_TARGET_BOARD | awk -F '"' '{print $2}')
-        echo "DEVICE_TARGET=$DEVICE_TARGET" >> $GITHUB_ENV
-        DEVICE_SUBTARGET=$(cat .config | grep CONFIG_TARGET_SUBTARGET | awk -F '"' '{print $2}')
-        echo "DEVICE_SUBTARGET=$DEVICE_SUBTARGET" >> $GITHUB_ENV
+          echo "status=success" >> $GITHUB_OUTPUT
 
-    - name: 下载待编译软件包
-      run: |
-        cd openwrt
-        rm package/feeds/packages/onionshare-cli -rf
-        make download -j$(nproc)
-        find dl -size -1024c -exec ls -l {} \;
-        find dl -size -1024c -exec rm -f {} \;
-        [ -e $GITHUB_WORKSPACE/settings/banner ] && cp $GITHUB_WORKSPACE/settings/banner package/base-files/files/etc
+      - name: 查看编译输出
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        run: ls -lah ${{ env.FIRMWARE }}
 
-    - name: 再次检查比较编译配置文件
-      run: |
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          echo
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo "_/ 编译程序修正后的配置文件 ..."
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo
-          cat openwrt/.config || true
-        fi
-        echo
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo "_/ 编译程序修正后的变化 ..."
-        echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-        echo
-        diff $GITHUB_WORKSPACE/devices/$CONFIG_FILE openwrt/.config || true
+      - name: 上传到临时位置
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware
+          path: ${{ env.FIRMWARE }}/
 
-        cd openwrt
-        # 修改主机名称
-        sed -i 's/ImmortalWrt/Phicomm-K2P/g' package/base-files/files/bin/config_generate
-        sh $GITHUB_WORKSPACE/scripts/$POST_FEEDS_UPDATE
+      - name: 再次检查编译输出
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        run: ls -lah ${{ env.FIRMWARE }}
 
-    - name: 编译固件
-      id: compile-firmware
-      run: |
-        set -e
-        cd openwrt
+      - name: 上传到发布页面
+        id: release
+        if: steps.organize.outputs.status == 'success' && !cancelled()
+        uses: svenstaro/upload-release-action@v2
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        with:
+          file: ${{ env.FIRMWARE }}/*
+          file_glob: true
+          tag: Standalone-Phicomm-K2P-${{ env.TAG }}
+          overwrite: true
+          body: ${{ env.RELEASE_BODY }}
 
-        make -j$(nproc) toolchain/install
-
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          tree -a -L 1 -h -D -p --du staging_dir/host/bin
-          make -j1 V=sc
-        else
-          make -j$(nproc) || make -j1 V=sc
-        fi
-        echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
-        echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: 组织文件
-      id: organize
-      if: steps.compile-firmware.outputs.status == 'success' && !cancelled()
-      run: |
-        cd openwrt/bin/targets/*/*
-
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          tree .
-        fi
-
-        rm -rf packages
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          tree .
-        fi
-
-        # ├── config.buildinfo
-        # ├── feeds.buildinfo
-        # ├── openwrt-24.10--xxxxxx
-        # ├── profiles.json
-        # ├── sha256sums
-        # └── version.buildinfo
-
-        #
-        VERSION_NUMBER=$(echo "${{ steps.version.outputs.tag }}" | sed -E 's/v([0-9]+\.[0-9]+)\.[0-9]+/\1/')
-        for file in openwrt-${VERSION_NUMBER}-*; do
-          mv "$file" "${file#openwrt-${VERSION_NUMBER}-}"
-        done
-
-        if [ "${{ github.event.inputs.debug }}" = "true" ]; then
-          echo
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          echo "_/ 待发布文件列表..."
-          echo "_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/"
-          tree .
-          echo
-        fi
-        echo "FIRMWARE=$PWD" >> $GITHUB_ENV
-
-        echo "发布版本：${{ steps.version.outputs.tag }}" > $GITHUB_WORKSPACE/release.txt
-        echo "平台架构：${{ env.DEVICE_TARGET }}-${{ env.DEVICE_SUBTARGET }}" >> $GITHUB_WORKSPACE/release.txt
-        echo "固件源码：${{ env.REPO_URL }}" >> $GITHUB_WORKSPACE/release.txt
-        echo "内核版本：$(cat *.manifest | grep ^kernel | cut -d- -f2 | tr -d ' ')" >> $GITHUB_WORKSPACE/release.txt
-        echo "默认地址：192.168.1.1" >> $GITHUB_WORKSPACE/release.txt
-        echo "默认密码：空" >> $GITHUB_WORKSPACE/release.txt
-        echo "构建日期：${{ env.DATE }}" >> $GITHUB_WORKSPACE/release.txt
-        echo "插件列表：" >> $GITHUB_WORKSPACE/release.txt
-        echo "" >> $GITHUB_WORKSPACE/release.txt
-        cat $GITHUB_WORKSPACE/packages.txt >> $GITHUB_WORKSPACE/release.txt
-
-        rm -rf $GITHUB_WORKSPACE/Plug-in
-        RELEASE_BODY=$(cat $GITHUB_WORKSPACE/release.txt)
-        echo "RELEASE_BODY<<EOF" >> $GITHUB_ENV
-        echo "$RELEASE_BODY" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-
-        echo "status=success" >> $GITHUB_OUTPUT
-
-    - name: 查看编译输出
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      run: ls -lah ${{ env.FIRMWARE }}
-
-    - name: 上传到临时位置
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      uses: actions/upload-artifact@v4
-      with:
-        name: firmware
-        path: ${{ env.FIRMWARE }}/
-
-    - name: 再次检查编译输出
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      run: ls -lah ${{ env.FIRMWARE }}
-
-    - name: 上传到发布页面
-      id: release
-      if: steps.organize.outputs.status == 'success' && !cancelled()
-      uses: svenstaro/upload-release-action@v2
-      env:
-        TAG: ${{ steps.version.outputs.tag }}
-      with:
-        file: ${{ env.FIRMWARE }}/*
-        file_glob: true
-        tag: Standalone-Phicomm-K2P-${{ env.TAG }}
-        overwrite: true
-        body: ${{ env.RELEASE_BODY }}
-
-    - name: 移除已过时的旧版本
-      if: steps.release.outputs.browser_download_url != '' && !cancelled()
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      uses: dev-drprasad/delete-older-releases@v0.3.4
-      with:
-        keep_latest: 3
-        delete_tag_pattern: Phicomm-K2P
-        delete_tags: true
+      - name: 移除已过时的旧版本
+        if: steps.release.outputs.browser_download_url != '' && !cancelled()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 3
+          delete_tag_pattern: Phicomm-K2P
+          delete_tags: true
 
   update-repo:
     needs:

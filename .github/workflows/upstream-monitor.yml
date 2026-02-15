@@ -1,12 +1,12 @@
 name: Upstream Monitor
 
 env:
-  REPO_URL: https://github.com/immortalwrt/immortalwrt
+  REPO_URL: https://github.com/openwrt/openwrt
   REPO_BRANCH: master
 
 on:
   schedule:
-    - cron: '30 21 * * *'
+    - cron: "30 21 * * *"
 
 jobs:
   check-devices:
@@ -76,7 +76,6 @@ jobs:
           token: ${{ secrets.PAT }}
           event-type: Matrix Build
           client-payload: '{"branch": "${{ steps.version.outputs.BRANCH }}"}'
-
 
   housekeep:
     needs: check-devices
