@@ -1,0 +1,98 @@
+name: Upstream Monitor
+
+env:
+  REPO_URL: https://github.com/openwrt/openwrt
+  REPO_BRANCH: master
+
+on:
+  schedule:
+    - cron: "30 21 * * *"
+
+jobs:
+  check-devices:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: check upstream version
+        id: version
+        run: |
+          FOUND=false
+          NEW_TAG=""
+          RELEASED_TAG=$(awk '/latest/{print $NF; exit}' README.md)
+          IFS='.' read -r -a RELEASED_TAG_HT <<< "${RELEASED_TAG//v/}"
+
+          TAG_LIST=$(wget -qO- --tries=3 "https://api.github.com/repos/openwrt/openwrt/tags" | awk -F '"' '/name/{print $(NF-1)}')
+          IFS=' ' read -r -a TAGS <<< "$TAG_LIST"
+
+          # 遍历查找所有的分支，因为上游有多个版本并行发布，找出比已发布版本更新的标签
+          for TAG in "${TAGS[@]}"; do
+            # v25.12.0
+            echo "[INFO] 找到分支：$TAG"
+            if [[ ! $TAG =~ ^v[0-9]{2}\.[0-9]{2}\.[0-9]+$ ]]; then
+              echo "[INFO] 分支：$TAG，不满足正则表达式'v[0-9]{2}\.[0-9]{2}\.[0-9]{1}'，忽略。"
+              continue
+            fi
+            # 按段拆分标签
+            IFS='.' read -r -a CURRENT_TAG_HT <<< "${TAG//v/}"
+
+            # 标准化
+            while [[ ${#RELEASED_TAG_HT[@]} -lt ${#CURRENT_TAG_HT[@]} ]]; do
+              RELEASED_TAG_HT+=("0")
+            done
+            while [[ ${#CURRENT_TAG_HT[@]} -lt ${#RELEASED_TAG_HT[@]} ]]; do
+              CURRENT_TAG_HT+=("0")
+            done
+
+            # 比较，主版本或者次版本号有更新
+            for ((i=0; i<${#RELEASED_TAG_HT[@]}; i++)); do
+              if (( 10#${CURRENT_TAG_HT[i]} > 10#${RELEASED_TAG_HT[i]} )); then
+                FOUND=true
+                break
+              elif (( 10#${CURRENT_TAG_HT[i]} < 10#${RELEASED_TAG_HT[i]} )); then
+                break
+              fi
+            done
+
+            # 有新版
+            if $FOUND; then
+              NEW_TAG=$TAG
+              echo "[INFO] 找到新版本，标签：$NEW_TAG"
+              break
+            fi
+          done
+
+          echo "当前已经发布的标签：$RELEASED_TAG"
+          if $FOUND; then
+            echo "[INFO] 上游找到的新标签：$NEW_TAG"
+          else
+            echo "[INFO] 上游没有可编译的新标签。"
+          fi
+
+          echo "TAG=${NEW_TAG}" >> $GITHUB_OUTPUT
+
+      - name: trigger build
+        if: steps.version.outputs.TAG != ''
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.PAT }}
+          event-type: Matrix Build
+          client-payload: '{"tag": "${{ steps.version.outputs.TAG }}"}'
+
+  housekeep:
+    needs: check-devices
+    runs-on: ubuntu-latest
+    steps:
+      - name: delete old workflow runs
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.PAT }}
+          repository: ${{ github.repository }}
+          delete_workflow_pattern: "Upstream Monitor"
+          retain_days: 0
+          keep_minimum_runs: 0
+          delete_run_by_conclusion_pattern: "cancelled, skipped, success"
