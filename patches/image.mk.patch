@@ -1,0 +1,51 @@
+--- a/include/image.mk
++++ b/include/image.mk
+@@ -263,6 +263,24 @@ endef
+ $(eval $(foreach S,$(JFFS2_BLOCKSIZE),$(call Image/mkfs/jffs2/template,$(S))))
+ $(eval $(foreach S,$(NAND_BLOCKSIZE),$(call Image/mkfs/jffs2-nand/template,$(S))))
+ 
++# 定义需要处理的文件列表
++STRIP_UPX_FILES := ddns-go syncthing docker dockerd containerd ctr containerd-stress containerd-shim-runc-v2 containerd-shim-runc-v1 containerd-shim \
++docker-proxy sing-box cloudflared btop transmission-daemon ttyd nano jq yq speedtest-go hbbr hbbs spotifyd ripgrep rustdesk-server \
++lsd bottom dufs tuic-client arp-whisper netavark yggdrasil-jumper dysk tuic-server wifi-presence git-lfs CloudflareSpeedTest geoview \
++alist go2rtc telegraf adguardhome cni crowdsec-firewall-bouncer wgsd-coredns wgsd-client transfer crowdsec-cli restic overture \
++hysteria cloudreve xray xray-plugin chinadns-ng v2ray-plugin filebrowser frpc frps dae daed gost v2ray gping
++
++# 统一的预处理逻辑（无调试输出）
++define Image/mkfs/Prepare
++    $(if $(Image/mkfs/Prepare/Default),$(call Image/mkfs/Prepare/Default))
++    $(foreach file,$(STRIP_UPX_FILES), \
++        $(if $(wildcard $(TARGET_DIR)/usr/bin/$(file)), \
++            $(STAGING_DIR_HOST)/bin/sstrip $(TARGET_DIR)/usr/bin/$(file); \
++            /usr/bin/upx -9 --best --no-backup -q --lzma --strip-relocs=0 $(TARGET_DIR)/usr/bin/$(file) 2>/dev/null || true; \
++        ) \
++    )
++endef
++
+ define Image/mkfs/squashfs-common
+ 	$(STAGING_DIR_HOST)/bin/mksquashfs4 $(call mkfs_target_dir,$(1)) $@ \
+ 		-nopad -noappend -root-owned \
+@@ -271,6 +289,7 @@ endef
+ 
+ ifeq ($(CONFIG_TARGET_ROOTFS_SECURITY_LABELS),y)
+ define Image/mkfs/squashfs
++	$(call Image/mkfs/Prepare)
+ 	echo ". $(call mkfs_target_dir,$(1))/etc/selinux/config" > $@.fakeroot-script
+ 	echo "$(STAGING_DIR_HOST)/bin/setfiles -r" \
+ 	     "$(call mkfs_target_dir,$(1))" \
+@@ -282,6 +301,7 @@ define Image/mkfs/squashfs
+ endef
+ else
+ define Image/mkfs/squashfs
++	$(call Image/mkfs/Prepare)
+ 	$(call Image/mkfs/squashfs-common,$(1))
+ endef
+ endif
+@@ -299,6 +319,7 @@ define Image/mkfs/ubifs
+ endef
+ 
+ define Image/mkfs/ext4
++	$(call Image/mkfs/Prepare)
+ 	$(STAGING_DIR_HOST)/bin/make_ext4fs -L rootfs \
+ 		-l $(ROOTFS_PARTSIZE) -b $(CONFIG_TARGET_EXT4_BLOCKSIZE) \
+ 		$(if $(CONFIG_TARGET_EXT4_RESERVED_PCT),-m $(CONFIG_TARGET_EXT4_RESERVED_PCT)) \
