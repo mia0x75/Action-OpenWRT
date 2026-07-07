@@ -1,0 +1,90 @@
+--- a/include/target.mk
++++ b/include/target.mk
+@@ -404,3 +404,87 @@ ifeq ($(TARGET_BUILD),1)
+ endif
+ 
+ endif #__target_inc
++
++OPTIMIZE_TARGETS := ddns-go \
++                    syncthing \
++                    docker \
++                    dockerd \
++                    containerd \
++                    ctr \
++                    containerd-stress \
++                    containerd-shim-runc-v2 \
++                    containerd-shim-runc-v1 \
++                    containerd-shim \
++                    docker-proxy \
++                    sing-box \
++                    cloudflared \
++                    btop \
++                    transmission-daemon \
++                    ttyd \
++                    nano \
++                    jq \
++                    yq \
++                    speedtest-go \
++                    hbbr \
++                    hbbs \
++                    spotifyd \
++                    ripgrep \
++                    rustdesk-server \
++                    lsd \
++                    bottom \
++                    dufs \
++                    tuic-client \
++                    arp-whisper \
++                    netavark \
++                    yggdrasil-jumper \
++                    dysk \
++                    tuic-server \
++                    wifi-presence \
++                    git-lfs \
++                    CloudflareSpeedTest \
++                    geoview \
++                    alist \
++                    go2rtc \
++                    telegraf \
++                    adguardhome \
++                    cni \
++                    crowdsec-firewall-bouncer \
++                    wgsd-coredns \
++                    wgsd-client \
++                    transfer \
++                    crowdsec-cli \
++                    restic \
++                    overture \
++                    hysteria \
++                    cloudreve \
++                    xray \
++                    xray-plugin \
++                    chinadns-ng \
++                    v2ray-plugin \
++                    filebrowser \
++                    frpc \
++                    frps \
++                    dae \
++                    daed \
++                    gost \
++                    v2ray
++
++define OptimizeTargetBins
++  @echo "[DEBUG] Starting binary optimization..."
++  echo "[DEBUG] sstrip version:"; \
++  $(STAGING_DIR_HOST)/bin/sstrip --version 2>/dev/null || echo "[ERROR] sstrip not found!"; \
++  echo "[DEBUG] upx version:"; \
++  $(STAGING_DIR_HOST)/bin/upx --version 2>/dev/null || echo "[ERROR] upx not found!";
++  set -e; \
++  for bin in $(OPTIMIZE_TARGETS); do \
++    filepath="$(TARGET_DIR)/usr/bin/$$bin"; \
++    echo "[DEBUG] Processing: $$filepath"; \
++    if [ -f "$$filepath" ]; then \
++      $(STAGING_DIR_HOST)/bin/sstrip "$$filepath" 2>/dev/null && \
++      $(STAGING_DIR_HOST)/bin/upx --best --lzma "$$filepath" >/dev/null 2>&1; \
++      echo "[DEBUG] Processed: $$filepath"; \
++    fi; \
++  done
++endef
++
++TARGET_PREPARE_IMAGE_HOOKS += $(OptimizeTargetBins)
